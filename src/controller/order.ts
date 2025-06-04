@@ -40,20 +40,8 @@ const order = async (
 
   const tradeId = "#5234";
   if (side == "sell") {
-    orderbook.asks.push({ price, quantity, orderId, side: "ask" });
-
     orderbook.bids.forEach((o) => {
       if (price <= o.price) {
-        // if (o.quantity > quantity) {
-        //   o.quantity -= quantity;
-        //   //   break;
-        // } else if (o.quantity < quantity) {
-        //   quantity -= o.quantity;
-        // } else {
-        //   quantity = o.quantity = 0;
-        //   //   break;
-        // }
-
         const fillQuantity = Math.min(quantity, o.quantity);
         o.quantity -= fillQuantity;
         bookWithQuantity.bids[o.price] =
@@ -61,46 +49,40 @@ const order = async (
         fills.push({ price, quantity: fillQuantity, tradeId });
         quantity -= fillQuantity;
 
-        if (fillQuantity != 0 && o.quantity == 0) {
+        if (o.quantity === 0) {
+          console.log("delete bid");
           orderbook.bids.splice(orderbook.bids.indexOf(o), 1);
-        }
-
-        if (quantity != 0) {
-          bookWithQuantity.asks[price] =
-            (bookWithQuantity.asks[price] || 0) + quantity;
         }
       }
     });
+    if (quantity != 0) {
+      orderbook.asks.push({ price, quantity, orderId, side: "ask" });
+      bookWithQuantity.asks[price] =
+        (bookWithQuantity.asks[price] || 0) + quantity;
+    }
   }
   if (side == "buy") {
-    orderbook.bids.push({ price, quantity, orderId, side: "bid" });
-
     orderbook.asks.forEach((o) => {
       if (price >= o.price) {
-        //     if (o.quantity > quantity) {
-        //       o.quantity -= quantity;
-        //       //   break;
-        //     } else if (o.quantity < quantity) {
-        //       quantity -= o.quantity;
-        //     } else {
-        //       quantity = o.quantity = 0;
-        //       //   break;
-        //     }
         const fillQuantity = Math.min(quantity, o.quantity);
         o.quantity -= fillQuantity;
+
         bookWithQuantity.asks[o.price] =
           (bookWithQuantity.asks[o.price] || 0) - fillQuantity;
         console.log(o.quantity, "o.quantity");
+
         fills.push({ price: o.price, quantity: fillQuantity, tradeId });
         quantity -= fillQuantity;
 
-        if (fillQuantity != 0 && o.quantity == 0) {
+        if (o.quantity === 0) {
+          console.log("delete ask");
           orderbook.asks.splice(orderbook.asks.indexOf(o), 1);
         }
       }
     });
 
     if (quantity != 0) {
+      orderbook.bids.push({ price, quantity, orderId, side: "bid" });
       bookWithQuantity.bids[price] =
         (bookWithQuantity.bids[price] || 0) + quantity;
     }
