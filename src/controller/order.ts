@@ -38,23 +38,33 @@ const order = async (
 
   const fills: Fills[] = [];
 
+  const ask_splice_indexes: number[] = [];
+  const bid_splice_indexes: number[] = [];
+
   const tradeId = "#5234";
+  let i = 0;
   if (side == "sell") {
+    console.log(orderbook, "----latest-----orderbook-------");
     orderbook.bids.forEach((o: Bid) => {
+      i++;
+      console.log(o, "o");
+      console.log(price <= o.price, "price <= o.price");
       if (price <= o.price) {
         const fillQuantity = Math.min(quantity, o.quantity);
+        console.log(fillQuantity, "fillQuantity");
         o.quantity -= fillQuantity;
         bookWithQuantity.bids[o.price] =
           (bookWithQuantity.bids[o.price] || 0) - fillQuantity;
-        fills.push({ price, quantity: fillQuantity, tradeId });
+        fills.push({ price: o.price, quantity: fillQuantity, tradeId });
         quantity -= fillQuantity;
-
+        console.log(quantity, "quantity");
+        console.log(o.quantity, "o.quantity");
         if (o.quantity === 0) {
-          console.log("delete bid");
-          orderbook.bids.splice(orderbook.bids.indexOf(o), 1);
+          bid_splice_indexes.push(orderbook.bids.indexOf(o));
         }
       }
     });
+
     if (quantity != 0) {
       //Insert order in sorted format
       const odr: Ask = { price, quantity, orderId, side: "ask" };
@@ -70,12 +80,13 @@ const order = async (
         (bookWithQuantity.asks[price] || 0) + quantity;
     }
   }
+
   if (side == "buy") {
     orderbook.asks.forEach((o: Ask) => {
       if (price >= o.price) {
         const fillQuantity = Math.min(quantity, o.quantity);
         o.quantity -= fillQuantity;
-
+        console.log(fillQuantity, "fill");
         bookWithQuantity.asks[o.price] =
           (bookWithQuantity.asks[o.price] || 0) - fillQuantity;
         console.log(o.quantity, "o.quantity");
@@ -84,8 +95,7 @@ const order = async (
         quantity -= fillQuantity;
 
         if (o.quantity === 0) {
-          console.log("delete ask");
-          orderbook.asks.splice(orderbook.asks.indexOf(o), 1);
+          ask_splice_indexes.push(orderbook.asks.indexOf(o));
         }
       }
     });
@@ -105,6 +115,12 @@ const order = async (
         (bookWithQuantity.bids[price] || 0) + quantity;
     }
   }
+
+  orderbook.bids = orderbook.bids.filter((_, idx) => !bid_splice_indexes.includes(idx));
+  orderbook.asks = orderbook.asks.filter((_, idx) => !ask_splice_indexes.includes(idx));
+  
+  console.log(i, "i");
+  console.log("------------------------------------------");
   console.log(orderbook, "orderbook");
   console.log(bookWithQuantity, "bookWithQuantity");
   return res.send({
