@@ -63,6 +63,11 @@ const order = async (
           bid_splice_indexes.push(orderbook.bids.indexOf(o));
         }
       }
+      console.log(bookWithQuantity.bids[o.price], "bookwithquantity");
+      if (bookWithQuantity.bids[o.price] === 0) {
+        console.log(bookWithQuantity, "bookWithQuantity");
+        delete bookWithQuantity.bids[o.price];
+      }
     });
 
     if (quantity != 0) {
@@ -98,6 +103,10 @@ const order = async (
           ask_splice_indexes.push(orderbook.asks.indexOf(o));
         }
       }
+
+      if (bookWithQuantity.asks[o.price] === 0) {
+        delete bookWithQuantity.asks[o.price];
+      }
     });
 
     if (quantity != 0) {
@@ -116,9 +125,13 @@ const order = async (
     }
   }
 
-  orderbook.bids = orderbook.bids.filter((_, idx) => !bid_splice_indexes.includes(idx));
-  orderbook.asks = orderbook.asks.filter((_, idx) => !ask_splice_indexes.includes(idx));
-  
+  orderbook.bids = orderbook.bids.filter(
+    (_, idx) => !bid_splice_indexes.includes(idx)
+  );
+  orderbook.asks = orderbook.asks.filter(
+    (_, idx) => !ask_splice_indexes.includes(idx)
+  );
+
   console.log(i, "i");
   console.log("------------------------------------------");
   console.log(orderbook, "orderbook");
