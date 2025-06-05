@@ -1,33 +1,33 @@
-
 interface Order {
-    price: number;
-    quantity: number;
-    orderId: string;
+  price: number;
+  quantity: number;
+  orderId: string;
 }
 
 interface Bid extends Order {
-    side: 'bid';
+  side: "bid";
 }
 
 interface Ask extends Order {
-    side: 'ask';
+  side: "ask";
 }
 
 interface Orderbook {
-    bids: Bid[];
-    asks: Ask[];
+  bids: Bid[];
+  asks: Ask[];
 }
 
-export const orderbook: Orderbook = {
-  bids: [
-    
-  ],
-  asks: [
-    
-  ]
-}
+const orderbook: Orderbook = {
+  bids: [],
+  asks: [],
+};
 
-export const bookWithQuantity: {bids: {[price: number]: number}; asks: {[price: number]: number}} = {
-    bids: {},
-    asks: {}
-}
+const bookWithQuantity: {
+  bids: { [price: number]: number };
+  asks: { [price: number]: number };
+} = {
+  bids: {},
+  asks: {},
+};
+
+export { Order, Bid, Ask, Orderbook, orderbook, bookWithQuantity };

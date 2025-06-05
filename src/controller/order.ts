@@ -1,5 +1,5 @@
 import { OrderInputSchema } from "../types/types";
-import { bookWithQuantity, orderbook } from "../orderbook";
+import { Ask, Bid, bookWithQuantity, orderbook } from "../orderbook";
 
 interface Fills {
   price: number;
@@ -40,7 +40,7 @@ const order = async (
 
   const tradeId = "#5234";
   if (side == "sell") {
-    orderbook.bids.forEach((o) => {
+    orderbook.bids.forEach((o: Bid) => {
       if (price <= o.price) {
         const fillQuantity = Math.min(quantity, o.quantity);
         o.quantity -= fillQuantity;
@@ -56,13 +56,22 @@ const order = async (
       }
     });
     if (quantity != 0) {
-      orderbook.asks.push({ price, quantity, orderId, side: "ask" });
+      //Insert order in sorted format
+      const odr: Ask = { price, quantity, orderId, side: "ask" };
+      const index = orderbook.asks.findIndex((el: Ask) => el.price > odr.price);
+
+      if (index === -1) {
+        orderbook.asks.push(odr);
+      } else {
+        orderbook.asks.splice(index, 0, odr);
+      }
+
       bookWithQuantity.asks[price] =
         (bookWithQuantity.asks[price] || 0) + quantity;
     }
   }
   if (side == "buy") {
-    orderbook.asks.forEach((o) => {
+    orderbook.asks.forEach((o: Ask) => {
       if (price >= o.price) {
         const fillQuantity = Math.min(quantity, o.quantity);
         o.quantity -= fillQuantity;
@@ -82,7 +91,16 @@ const order = async (
     });
 
     if (quantity != 0) {
-      orderbook.bids.push({ price, quantity, orderId, side: "bid" });
+      //Insert order in sorted format
+      const odr: Bid = { price, quantity, orderId, side: "bid" };
+      const index = orderbook.bids.findIndex((el: Bid) => el.price > odr.price);
+
+      if (index === -1) {
+        orderbook.bids.push(odr);
+      } else {
+        orderbook.bids.splice(index, 0, odr);
+      }
+
       bookWithQuantity.bids[price] =
         (bookWithQuantity.bids[price] || 0) + quantity;
     }
